@@ -2,35 +2,50 @@ import React, { useState } from "react";
 import Navbar from "../Components/Navbar";
 
 const Home = () => {
-  const [length, setLength] = useState(8);
+  const [length, setLength] = useState(15);
+  const [hasNumbers, setHasNumbers] = useState(false);
   const [isUpperCase, setIsUpperCase] = useState(false);
   const [isLowerCase, setIsLowerCase] = useState(false);
   const [symbols, setSymbols] = useState(false);
+  const trueStates = [hasNumbers, isUpperCase, isLowerCase, symbols].filter(
+    (value) => !!value
+  );
+
   // By the way, we forgot to consider number case
 
   const formHandler = (e) => {
     e.preventDefault();
     if (!(isUpperCase || isLowerCase || symbols)) return;
 
+    let x = 1;
+    x = 2;
+    console.log(x);
+
     // let password = Math.floor(Math.random() * Math.pow(10, length)).toString();
     const password = new Array(length);
+    const amount = password.length / trueStates.length;
+    const numbers = "0123456789";
+    if (hasNumbers) {
+      for (let index = 0; index < amount; index++) {
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * password.length);
+        } while (password[randomIndex]); // This is to prevent getting same randomIndex in the previous for loops
+
+        let randomLetter = numbers[Math.floor(Math.random() * numbers.length)];
+
+        password[randomIndex] = randomLetter;
+      }
+    }
 
     const characters = "abcdefghijklmnopqrstuvwxyz";
     // characters[0] = "A"; // string is primitive type, so it's immutable
 
     if (isLowerCase) {
-      // 1/3 of the password should be lower case letters
-      const amount = password.length / 3;
-
       for (let index = 0; index < amount; index++) {
         let randomIndex;
         do {
           randomIndex = Math.floor(Math.random() * password.length);
-          // I think it should be calculated in this way.
-          // When password.length is 8, the maximum randomIndex should be 7.
-          // Math.random() is always lower than 1, so Math.random() * 8 is between 0 and 7.xxx
-          // After applying Math.floor(), it will become an integer between 0 and 7.
-          // Do you think it's correct? :O
         } while (password[randomIndex]); // This is to prevent getting same randomIndex in the previous for loops
 
         let randomLetter =
@@ -40,7 +55,59 @@ const Home = () => {
       }
     }
 
-    console.log(password.join("")); // Now it returns string that consists of random lowercase letters
+    if (isUpperCase) {
+      for (let index = 0; index < amount; index++) {
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * password.length);
+        } while (password[randomIndex]); // This is to prevent getting same randomIndex in the previous for loops
+
+        let randomLetter =
+          characters[
+            Math.floor(Math.random() * characters.length)
+          ].toUpperCase();
+
+        password[randomIndex] = randomLetter;
+      }
+    }
+
+    const specialCharacters = `/!@#$%^&*()_+-=[]{};':"|,.<>?`;
+
+    if (symbols) {
+      for (let index = 0; index < amount; index++) {
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * password.length);
+        } while (password[randomIndex]); // This is to prevent getting same randomIndex in the previous for loops
+
+        let randomLetter =
+          specialCharacters[
+            Math.floor(Math.random() * specialCharacters.length)
+          ];
+
+        password[randomIndex] = randomLetter;
+      }
+    }
+    let result = password.join("");
+
+    // const [result, setResult] = useState(password.join(""));
+
+    if (result.length !== length) {
+      let emptyNumber = length - result.length;
+      const necessaryCharacters = [
+        hasNumbers && numbers,
+        isUpperCase && characters,
+        isLowerCase && characters.toUpperCase(),
+        symbols && specialCharacters,
+      ].filter((value) => !!value);
+
+      for (let index = 0; index < emptyNumber; index++) {
+        result += necessaryCharacters[index][0];
+      }
+    }
+
+    console.log(result);
+    return result;
   };
 
   const lengthHandler = (e) => {
@@ -50,10 +117,11 @@ const Home = () => {
       setLength(21);
     }
 
-    setLength(value);
+    setLength(Number(value));
     console.log(value);
   };
 
+  const numbersHandler = (e) => setHasNumbers(!hasNumbers);
   const uppercaseHandler = (e) => setIsUpperCase(!isUpperCase);
   const lowerCaseHandler = (e) => setIsLowerCase(!isLowerCase);
   const symbolsHandler = (e) => setSymbols(!symbols);
@@ -68,15 +136,24 @@ const Home = () => {
           onChange={lengthHandler}
           value={length}
         />
-        <label htmlFor="symbols">Include Upper Case</label>
+        <label htmlFor="numbers">Include Numbers</label>
         <input
           type="checkbox"
+          id="numbers"
+          value={hasNumbers}
+          onChange={numbersHandler}
+        />
+        <label htmlFor="uppercase">Include Upper Case</label>
+        <input
+          type="checkbox"
+          id="uppercase"
           value={isUpperCase}
           onChange={uppercaseHandler}
         />
-        <label htmlFor="symbols">Include Lower Case</label>
+        <label htmlFor="lowercase">Include Lower Case</label>
         <input
           type="checkbox"
+          id="lowercase"
           value={isLowerCase}
           onChange={lowerCaseHandler}
         />
@@ -87,9 +164,7 @@ const Home = () => {
           value={symbols}
           onChange={symbolsHandler}
         />
-        <button type="submit" onSubmit={formHandler}>
-          Create password
-        </button>
+        <button type="submit">Create password</button>
       </form>
 
       <h1>Home Page</h1>
